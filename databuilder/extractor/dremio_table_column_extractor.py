@@ -96,7 +96,7 @@ class DremioTableColumnExtractor(Extractor):
         elif exclude_pds_tables:
             where_stmt = "WHERE nested_0.TABLE_TYPE != 'TABLE';"
         else:
-            where_stmt = 'LIMIT 4000;'
+            where_stmt = ';'
 
         self._cluster = conf.get_string(DremioTableColumnExtractor.DREMIO_CLUSTER_KEY)
 
