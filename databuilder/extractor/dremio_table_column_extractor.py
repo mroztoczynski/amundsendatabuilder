@@ -90,11 +90,11 @@ class DremioTableColumnExtractor(Extractor):
         exclude_pds_tables = conf.get_bool(DremioTableColumnExtractor.DREMIO_EXCLUDE_PDS_TABLES_KEY)
         if exclude_sys_tables and exclude_pds_tables:
             where_stmt = ("WHERE nested_0.TABLE_TYPE != 'SYSTEM_TABLE' AND "
-                          "nested_0.TABLE_TYPE != 'TABLE' LIMIT 4000;")
+                          "nested_0.TABLE_TYPE != 'TABLE';")
         elif exclude_sys_tables:
-            where_stmt = "WHERE nested_0.TABLE_TYPE != 'SYSTEM_TABLE' LIMIT 4000;"
+            where_stmt = "WHERE nested_0.TABLE_TYPE != 'SYSTEM_TABLE';"
         elif exclude_pds_tables:
-            where_stmt = "WHERE nested_0.TABLE_TYPE != 'TABLE' LIMIT 4000;"
+            where_stmt = "WHERE nested_0.TABLE_TYPE != 'TABLE';"
         else:
             where_stmt = 'LIMIT 4000;'
 
