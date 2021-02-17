@@ -1,3 +1,4 @@
+import sys
 import logging
 import pyodbc
 import importlib
@@ -47,8 +48,14 @@ class DremioMetadataExtractor(Extractor):
         conf = conf.with_fallback(DremioMetadataExtractor.DEFAULT_CONFIG)
         self.__sql_stmt = conf.get_string(DremioMetadataExtractor.SQL_STATEMENT)
         self.__model_class = self.__get_model_class(conf.get(DremioMetadataExtractor.MODEL_CLASS, None))
+        
+        driver = conf.get_string(DremioTableColumnExtractor.DREMIO_DRIVER_KEY)
+        
+        if sys.platform == 'linux':
+            driver = f'DRIVER={driver}'
+        
         self.__dremio_odbc_cursor = pyodbc.connect(
-            conf.get_string(DremioMetadataExtractor.DREMIO_DRIVER_KEY),
+            driver,
             uid=conf.get_string(DremioMetadataExtractor.DREMIO_USER_KEY),
             pwd=conf.get_string(DremioMetadataExtractor.DREMIO_PASSWORD_KEY),
             host=conf.get_string(DremioMetadataExtractor.DREMIO_HOST_KEY),
