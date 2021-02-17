@@ -1,7 +1,7 @@
 # Copyright Contributors to the Amundsen project.
 # SPDX-License-Identifier: Apache-2.0
 
-
+import sys
 from collections import namedtuple
 from itertools import groupby
 import logging
@@ -108,9 +108,13 @@ class DremioTableColumnExtractor(Extractor):
         )
 
         LOGGER.info('SQL for Dremio metadata: {}'.format(self.sql_stmt))
+        
+        driver = conf.get_string(DremioTableColumnExtractor.DREMIO_DRIVER_KEY)
+        if sys.platform == 'linux':
+            driver = f'DRIVER={driver}'
 
         self._pyodbc_cursor = connect(
-            conf.get_string(DremioTableColumnExtractor.DREMIO_DRIVER_KEY),
+            driver,
             uid=conf.get_string(DremioTableColumnExtractor.DREMIO_USER_KEY),
             pwd=conf.get_string(DremioTableColumnExtractor.DREMIO_PASSWORD_KEY),
             host=conf.get_string(DremioTableColumnExtractor.DREMIO_HOST_KEY),
