@@ -49,7 +49,7 @@ class DremioMetadataExtractor(Extractor):
         self.__sql_stmt = conf.get_string(DremioMetadataExtractor.SQL_STATEMENT)
         self.__model_class = self.__get_model_class(conf.get(DremioMetadataExtractor.MODEL_CLASS, None))
         
-        driver = conf.get_string(DremioTableColumnExtractor.DREMIO_DRIVER_KEY)
+        driver = conf.get_string(DremioMetadataExtractor.DREMIO_DRIVER_KEY)
         
         if sys.platform == 'linux':
             driver = f'DRIVER={driver}'
