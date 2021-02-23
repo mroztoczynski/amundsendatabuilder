@@ -4,7 +4,7 @@
 
 from setuptools import find_packages, setup
 
-__version__ = '4.1.0'
+__version__ = '1.0.4'
 
 
 requirements = [
@@ -83,12 +83,12 @@ all_deps = requirements + kafka + cassandra + glue + snowflake + athena + \
     bigquery + jsonpath + db2 + dremio + druid + spark + feast + neptune
 
 setup(
-    name='amundsen-databuilder',
+    name='ey-brdf-amundsen-databuilder',
     version=__version__,
-    description='Amundsen Data builder',
+    description='Amundsen databuilder fork for EY BRDF project',
     url='https://www.github.com/amundsen-io/amundsendatabuilder',
-    maintainer='Amundsen TSC',
-    maintainer_email='amundsen-tsc@lists.lfai.foundation',
+    maintainer='EY BRDF team',
+    maintainer_email='brdf@ey.com',
     packages=find_packages(exclude=['tests*']),
     dependency_links=[],
     install_requires=requirements,
