@@ -36,8 +36,9 @@ class DremioTableColumnExtractor(Extractor):
       '{cluster}' AS cluster,
       nested_1.TABLE_SCHEMA AS schema,
       nested_1.TABLE_NAME AS name,
-      CAST(NULL AS VARCHAR) AS description,
-      CASE WHEN nested_0.TABLE_TYPE='VIEW' THEN TRUE ELSE FALSE END AS is_view
+      CASE WHEN nested_2.WIKI IS NULL THEN '' ELSE nested_2.WIKI END AS description,
+      CASE WHEN nested_0.TABLE_TYPE='VIEW' THEN TRUE ELSE FALSE END AS is_view,
+      CASE WHEN nested_2.TAGS IS NULL THEN '' ELSE nested_2.TAGS END AS tags
     FROM (
       SELECT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
       FROM INFORMATION_SCHEMA."TABLES"
@@ -48,6 +49,12 @@ class DremioTableColumnExtractor(Extractor):
     ) nested_1 ON nested_0.TABLE_NAME = nested_1.TABLE_NAME
       AND nested_0.TABLE_SCHEMA = nested_1.TABLE_SCHEMA
       AND nested_0.TABLE_CATALOG = nested_1.TABLE_CATALOG
+    LEFT JOIN (
+      SELECT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, WIKI, TAGS
+      FROM {dremio_collaboration_metadata_table}
+    ) nested_2 ON nested_0.TABLE_NAME = nested_2.TABLE_NAME
+      AND nested_0.TABLE_SCHEMA = nested_2.TABLE_SCHEMA
+      AND nested_0.TABLE_CATALOG = nested_2.TABLE_CATALOG
     {where_stmt}
     '''
 
@@ -60,6 +67,8 @@ class DremioTableColumnExtractor(Extractor):
     DREMIO_CLUSTER_KEY = 'cluster_key'
     DREMIO_EXCLUDE_SYS_TABLES_KEY = 'exclude_system_tables'
     DREMIO_EXCLUDE_PDS_TABLES_KEY = 'exclude_pds_tables'
+    DREMIO_COLLABORATON_METADATA_TABLE_KEY = 'dremio_collaboration_metadata_table_key'
+    DREMIO_TAGS_SEPARATOR = 'tags_seperator'
 
     # Default values
     DEFAULT_AUTH_USER = 'dremio_auth_user'
@@ -70,6 +79,8 @@ class DremioTableColumnExtractor(Extractor):
     DEFAULT_CLUSTER_NAME = 'Production'
     DEFAULT_EXCLUDE_SYS_TABLES = True
     DEFAULT_EXCLUDE_PDS_TABLES = False
+    DEFAULT_DREMIO_COLLABORATON_METADATA_TABLE = 'DREMIO_COLLABORATION_METADATA'
+    DEFAULT_TAGS_SEPARATOR = None
 
     # Default config
     DEFAULT_CONFIG = ConfigFactory.from_dict({
@@ -80,7 +91,9 @@ class DremioTableColumnExtractor(Extractor):
         DREMIO_DRIVER_KEY: DEFAULT_DRIVER,
         DREMIO_CLUSTER_KEY: DEFAULT_CLUSTER_NAME,
         DREMIO_EXCLUDE_SYS_TABLES_KEY: DEFAULT_EXCLUDE_SYS_TABLES,
-        DREMIO_EXCLUDE_PDS_TABLES_KEY: DEFAULT_EXCLUDE_PDS_TABLES
+        DREMIO_EXCLUDE_PDS_TABLES_KEY: DEFAULT_EXCLUDE_PDS_TABLES,
+        DREMIO_COLLABORATON_METADATA_TABLE_KEY: DEFAULT_DREMIO_COLLABORATON_METADATA_TABLE,
+        DREMIO_TAGS_SEPARATOR: DEFAULT_TAGS_SEPARATOR
     })
 
     def init(self, conf: ConfigTree) -> None:
@@ -99,11 +112,12 @@ class DremioTableColumnExtractor(Extractor):
             where_stmt = ';'
 
         self._cluster = conf.get_string(DremioTableColumnExtractor.DREMIO_CLUSTER_KEY)
-
-        self._cluster = conf.get_string(DremioTableColumnExtractor.DREMIO_CLUSTER_KEY)
+        self._tags_separator = conf.get_string(DremioTableColumnExtractor.DREMIO_TAGS_SEPARATOR)
+        self._dremio_collaboration_metadata_table = conf.get_string(DremioTableColumnExtractor.DREMIO_COLLABORATON_METADATA_TABLE_KEY)
 
         self.sql_stmt = DremioTableColumnExtractor.SQL_STATEMENT.format(
             cluster=self._cluster,
+            dremio_collaboration_metadata_table=self._dremio_collaboration_metadata_table,
             where_stmt=where_stmt
         )
 
@@ -157,7 +171,8 @@ class DremioTableColumnExtractor(Extractor):
                                 last_row['name'],
                                 last_row['description'],
                                 columns,
-                                last_row['is_view'] == 'true')
+                                last_row['is_view'] == 'true',
+                                last_row['tags'].split(self._tags_separator) if self._tags_separator else last_row['tags'])
 
     def _get_raw_extract_iter(self) -> Iterator[Dict[str, Any]]:
         '''

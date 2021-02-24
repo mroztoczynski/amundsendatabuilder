@@ -13,7 +13,7 @@ import uuid
 from elasticsearch.client import Elasticsearch
 from pyhocon import ConfigFactory
 
-from databuilder.extractor.dremio_metadata_extractor import DremioMetadataExtractor
+from databuilder.extractor.dremio_table_column_extractor import DremioTableColumnExtractor
 from databuilder.extractor.neo4j_extractor import Neo4jExtractor
 from databuilder.extractor.neo4j_search_data_extractor import Neo4jSearchDataExtractor
 from databuilder.job.job import DefaultJob
@@ -55,17 +55,17 @@ def create_sample_dremio_job():
     node_files_folder = f'{tmp_folder}/nodes'
     relationship_files_folder = f'{tmp_folder}/relationships'
 
-    extractor = DremioMetadataExtractor()
+    extractor = DremioTableColumnExtractor()
     loader = FsNeo4jCSVLoader()
 
     task = DefaultTask(extractor=extractor,
                        loader=loader)
 
     job_config = ConfigFactory.from_dict({
-        f'extractor.dremio.{DremioMetadataExtractor.DREMIO_USER_KEY}': DREMIO_USER,
-        f'extractor.dremio.{DremioMetadataExtractor.DREMIO_PASSWORD_KEY}': DREMIO_PASSWORD,
-        f'extractor.dremio.{DremioMetadataExtractor.DREMIO_HOST_KEY}': DREMIO_HOST,
-        f'extractor.dremio.{DremioMetadataExtractor.DREMIO_EXCLUDE_PDS_TABLES_KEY}': True,
+        f'extractor.dremio.{DremioTableColumnExtractor.DREMIO_USER_KEY}': DREMIO_USER,
+        f'extractor.dremio.{DremioTableColumnExtractor.DREMIO_PASSWORD_KEY}': DREMIO_PASSWORD,
+        f'extractor.dremio.{DremioTableColumnExtractor.DREMIO_HOST_KEY}': DREMIO_HOST,
+        f'extractor.dremio.{DremioTableColumnExtractor.DREMIO_EXCLUDE_PDS_TABLES_KEY}': True,
         f'loader.filesystem_csv_neo4j.{FsNeo4jCSVLoader.NODE_DIR_PATH}': node_files_folder,
         f'loader.filesystem_csv_neo4j.{FsNeo4jCSVLoader.RELATION_DIR_PATH}': relationship_files_folder,
         f'loader.filesystem_csv_neo4j.{FsNeo4jCSVLoader.SHOULD_DELETE_CREATED_DIR}': True,
