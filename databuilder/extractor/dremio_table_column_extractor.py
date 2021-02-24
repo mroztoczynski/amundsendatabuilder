@@ -172,7 +172,7 @@ class DremioTableColumnExtractor(Extractor):
                                 last_row['description'],
                                 columns,
                                 last_row['is_view'] == 'true',
-                                last_row['tags'].split(self._tags_separator) if self._tags_separator else last_row['tags'])
+                                last_row['tags'].split(self._tags_separator) if last_row['tags'] else None)
 
     def _get_raw_extract_iter(self) -> Iterator[Dict[str, Any]]:
         '''
